@@ -5,8 +5,8 @@ function J = makeDarkChannel( I, patch_size )
     tmpPatch = double(zeros(2*floor(patch_size/2),2*floor(patch_size/2),channels));
     
     I = padarray(I, [floor(patch_size/2) floor(patch_size/2)], 'symmetric');
-    figure;
-    imshow(I);
+%     figure;
+%     imshow(I);
     % I think the size actually returns in order [y x ~ but doesn't really
     % matter as long as order is kept
     

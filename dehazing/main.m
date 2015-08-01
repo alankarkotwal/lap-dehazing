@@ -35,20 +35,22 @@ gamma_of = 0.5; % constant multiplier to priorpenelty(J(x)) in objective functio
 conv_par = 0.02; % Convergence parameter for gradient descent
 max_iter = 1000; % Maximum iterations
 
-present_J = Orig_image;
-present_t = double(ones(size(present_J)));
+present_J = ones(size(Orig_image));
+k = size(present_J);
+present_t = double(ones(k(1),k(2)));
 
 modelFidelityTerm = modelFidelity(Orig_image, present_J, present_t, A);
 obj_fn = sum(sum(modelFidelityTerm.^2)) + ...
-         beta * edgePrior(present_t, beta_of) + ...
-         gamma * edgePrior(present_J, gamma_of);
-obj_fns = double(zeros(max_iter, 1));
-J_update = double(zeros([size(present_J) 3]));
+         beta * edgePrior(present_t, beta_of,0) + ...
+         gamma * edgePrior(present_J, gamma_of,1)
+obj_fns = double(zeros(max_iter, 3));
+J_update = double(zeros(size(present_J)));
 iter = 1;
 
-while obj_fn > conv_par && iter < max_iter
+
+while obj_fn(1) > conv_par && obj_fn(2) > conv_par && obj_fn(3) > conv_par && iter < max_iter
     
-    obj_fns(iter) = obj_fn;
+    obj_fns(iter,:) = obj_fn;
     
     % Calculate the update
     t_update = 2 * modelFidelityTerm .* ...
@@ -67,8 +69,9 @@ while obj_fn > conv_par && iter < max_iter
     present_t = present_t - tau * t_update;
     
     modelFidelityTerm = modelFidelity(Orig_image, present_J, present_t, A);
-    obj_fn = modelFidelityTerm + ...
-         beta * edgePrior(present_t, beta_of) + ...
-         gamma * edgePrior(present_J, gamma_of);
+    obj_fn = sum(sum(modelFidelityTerm.^2)) + ...
+         beta * edgePrior(present_t, beta_of,0) + ...
+         gamma * edgePrior(present_J, gamma_of,1);
     
+     iter = iter+1;
 end
