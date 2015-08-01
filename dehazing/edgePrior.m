@@ -1,4 +1,4 @@
-function pen = edgePrior(I, gamma,flag)
+function pen = edgePrior(I, gamma, flag)
 
     tempImage1 = circshift(I, 1)-I;
     tempImage2 = circshift(I, -1)-I;

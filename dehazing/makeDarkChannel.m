@@ -1,6 +1,6 @@
 function J = makeDarkChannel( I, patch_size )
     % Assuming that this is RGB but overall not requiring it
-    [image_x image_y channels] = size(I);
+    [image_x, image_y, channels] = size(I);
     J = zeros(image_x,image_y);
     tmpPatch = double(zeros(2*floor(patch_size/2),2*floor(patch_size/2),channels));
     

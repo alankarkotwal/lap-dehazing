@@ -27,7 +27,7 @@
     
 %% Manually to be tuned parameters
 
-tau = 0.5; % gradient descent step size
+tau = 0.0005; % gradient descent step size
 beta = 1; % huber function parameter for t(x)
 gamma = 1; % huber function parameter for J(x)
 beta_of = 0.5; % constant multiplier to priorpenelty(t(x)) in objective function
@@ -35,22 +35,24 @@ gamma_of = 0.5; % constant multiplier to priorpenelty(J(x)) in objective functio
 conv_par = 0.02; % Convergence parameter for gradient descent
 max_iter = 1000; % Maximum iterations
 
-present_J = ones(size(Orig_image));
+present_J = double(ones(size(Orig_image)));
 k = size(present_J);
 present_t = double(ones(k(1),k(2)));
 
 modelFidelityTerm = modelFidelity(Orig_image, present_J, present_t, A);
-obj_fn = sum(sum(modelFidelityTerm.^2)) + ...
+obj_fn = 0.001*sum(sum(modelFidelityTerm.^2)) + ...
          beta * edgePrior(present_t, beta_of,0) + ...
-         gamma * edgePrior(present_J, gamma_of,1)
-obj_fns = double(zeros(max_iter, 3));
+         gamma * edgePrior(present_J(:, :, 1), gamma_of, 0) + ...
+         gamma * edgePrior(present_J(:, :, 2), gamma_of, 0) + ...
+         gamma * edgePrior(present_J(:, :, 3), gamma_of, 0);
+obj_fns = double(zeros(max_iter, 1));
 J_update = double(zeros(size(present_J)));
 iter = 1;
 
 
-while obj_fn(1) > conv_par && obj_fn(2) > conv_par && obj_fn(3) > conv_par && iter < max_iter
+while obj_fn > conv_par && iter < max_iter
     
-    obj_fns(iter,:) = obj_fn;
+    obj_fns(iter) = obj_fn;
     
     % Calculate the update
     t_update = 2 * modelFidelityTerm .* ...
@@ -65,13 +67,16 @@ while obj_fn(1) > conv_par && obj_fn(2) > conv_par && obj_fn(3) > conv_par && it
     end
     
     % Perform the update
-    present_J = present_J - tau * J_update;
-    present_t = present_t - tau * t_update;
+    present_J = present_J + tau * J_update;
+    present_t = present_t + tau * t_update;
     
     modelFidelityTerm = modelFidelity(Orig_image, present_J, present_t, A);
-    obj_fn = sum(sum(modelFidelityTerm.^2)) + ...
+    obj_fn = 0.001*sum(sum(modelFidelityTerm.^2)) + ...
          beta * edgePrior(present_t, beta_of,0) + ...
-         gamma * edgePrior(present_J, gamma_of,1);
+         gamma * edgePrior(present_J(:, :, 1), gamma_of, 0) + ...
+         gamma * edgePrior(present_J(:, :, 2), gamma_of, 0) + ...
+         gamma * edgePrior(present_J(:, :, 3), gamma_of, 0);
     
-     iter = iter+1;
+    disp(iter);
+    iter = iter+1;
 end
