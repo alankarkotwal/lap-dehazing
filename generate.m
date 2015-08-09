@@ -1,5 +1,6 @@
 
 in = imread('2.png');
+tx_orig = imread('txmap.png');
 [m,n,c] = size(in);
 out = zeros(m,n);
 temp = [0,0,0];
@@ -11,15 +12,17 @@ cloud = [255,0,0];
 double_ellipse = [231,56,56];
 tube = [139,70,193];
 instrument = [255,255,255];
+diamond = [225,125,59];
 
-elipse_bordert = 220;
-backgroundt = 220;
-single_ellipset = 12;
-cloudt = 120;
-double_ellipset = 120;
-tubet = 120;
-instrumentt = 120;
-othert = 120;
+elipse_bordert = 200;
+backgroundt = 195;
+single_ellipset = 210;
+cloudt = 210;
+double_ellipset = 200;
+tubet = 220;
+instrumentt = 255;
+othert = 250;
+diamondt = 250;
 
 for i=1:m
     for j=1:n
@@ -42,6 +45,8 @@ for i=1:m
             out(i,j)  = single_ellipset;
         elseif(abs(sum(temp - double_ellipse)) < 3)
             out(i,j)  = double_ellipset;
+        elseif(abs(sum(temp - diamond)) < 3)
+            out(i,j)  = diamondt;
         else
             out(i,j)  = othert;
         end
@@ -50,3 +55,6 @@ for i=1:m
 end
 
 out = double(out./255);
+tx_orig = double(tx_orig)./255;
+out = out.*tx_orig;
+out = out./max(max(out));
