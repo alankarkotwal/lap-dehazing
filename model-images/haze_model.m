@@ -12,3 +12,4 @@ t(:, :, 3) = temp;
 
 I = (1 - t).*A + t.*J;
 imshowpair(I, J, 'montage');
+imwrite(I, 'I.png');
