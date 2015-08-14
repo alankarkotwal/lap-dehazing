@@ -29,12 +29,12 @@
 %% Manually to be tuned parameters
 
 tau = 0.0005; % gradient descent step size
-beta = 1; % huber function parameter for t(x)
-gamma = 1; % huber function parameter for J(x)
-beta_of = 0.5; % constant multiplier to priorpenelty(t(x)) in objective function
-gamma_of = 0.5; % constant multiplier to priorpenelty(J(x)) in objective function
+beta = 0.99; % huber function parameter for t(x)
+gamma = 0.001; % huber function parameter for J(x)
+beta_of = 0.2; % constant multiplier to priorpenelty(t(x)) in objective function
+gamma_of = 0.2; % constant multiplier to priorpenelty(J(x)) in objective function
 conv_par = 0.02; % Convergence parameter for gradient descent
-max_iter = 10000; % Maximum iterations
+max_iter = 7000; % Maximum iterations
 
 present_J = double(ones(size(Orig_image)));
 k = size(present_J);
@@ -81,3 +81,9 @@ while obj_fn > conv_par && iter < max_iter
     disp(iter);
     iter = iter+1;
 end
+
+figure;
+plot(obj_fns);
+figure;
+x = imfuse(Orig_image,present_J,'montage');
+imshow(x);
