@@ -4,8 +4,8 @@
 %% Estimate for A
 % We need a handle on finding A for which we will use the method proposed
 
-    Orig_image = imread('10.png');
-    Orig_image = imresize(Orig_image,0.20);
+    Orig_image = imread('I1.png');
+%     Orig_image = imresize(Orig_image,0.25);
     Orig_image = double(Orig_image) ./ 255;        
     % We generate the dark channel prior at every pixel, using window size
     % and zero padding
@@ -29,12 +29,12 @@
 %% Manually to be tuned parameters
 
 tau = 0.0005; % gradient descent step size
-beta = 0.99; % huber function parameter for t(x)
-gamma = 0.001; % huber function parameter for J(x)
-beta_of = 0.2; % constant multiplier to priorpenelty(t(x)) in objective function
-gamma_of = 0.2; % constant multiplier to priorpenelty(J(x)) in objective function
-conv_par = 0.02; % Convergence parameter for gradient descent
-max_iter = 7000; % Maximum iterations
+beta = 0.9; % huber function parameter for t(x)
+gamma = 0.1; % huber function parameter for J(x)
+beta_of = 0.29; % constant multiplier to priorpenelty(t(x)) in objective function
+gamma_of = 0.29; % constant multiplier to priorpenelty(J(x)) in objective function
+conv_par = 0.002; % Convergence parameter for gradient descent
+max_iter = 3100; % Maximum iterations
 
 present_J = double(ones(size(Orig_image)));
 k = size(present_J);
@@ -69,6 +69,9 @@ while obj_fn > conv_par && iter < max_iter
     
     % Perform the update
     present_J = present_J + tau * J_update;
+    [r,c]=find(present_J>1);
+   present_J(sub2ind(size(present_J),r,c)) = 1;
+
     present_t = present_t + tau * t_update;
     
     modelFidelityTerm = modelFidelity(Orig_image, present_J, present_t, A);

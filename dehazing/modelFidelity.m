@@ -4,7 +4,7 @@ function res = modelFidelity(I, J, t, A)
     res = zeros(a, b, c);
     
     for i = 1:3
-        res(:, :, i) = (J(:, :, i).*t + (1-t).*A(1,i) - I(:, :, i));
+        res(:, :, i) = abs((J(:, :, i).*t + (1-t).*A(1,i) - I(:, :, i)));
     end
 
 end

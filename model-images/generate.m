@@ -1,28 +1,21 @@
 
-in = imread('2.png');
+in = imread('new.png');
 tx_orig = imread('txmap.png');
+tx_orig = rgb2gray(tx_orig);
 [m,n,c] = size(in);
 out = zeros(m,n);
 temp = [0,0,0];
 
-elipse_border = [111,6,6];
-background = [142,92,92];
-single_ellipse = [225,59,122];
-cloud = [255,0,0];
-double_ellipse = [231,56,56];
-tube = [139,70,193];
-instrument = [255,255,255];
-diamond = [225,125,59];
+color1 = [237,28,36];
+color2 = [185,122,87];
+color3 = [255,127,39];
+color4 = [247,26,70];
 
-elipse_bordert = 200;
-backgroundt = 195;
-single_ellipset = 210;
-cloudt = 210;
-double_ellipset = 200;
-tubet = 220;
-instrumentt = 255;
-othert = 250;
-diamondt = 250;
+color1t = 220;
+color2t = 220;
+color3t = 200;
+color4t = 190;
+bgt = 170;
 
 for i=1:m
     for j=1:n
@@ -31,24 +24,16 @@ for i=1:m
         temp(2) = in(i,j,2);
         temp(3) = in(i,j,3);
         
-        if(abs(sum(temp - instrument)) < 3)
-            out(i,j)  = instrumentt;
-        elseif(abs(sum(temp - elipse_border)) < 3)
-            out(i,j)  = elipse_bordert;
-        elseif(abs(sum(temp - background)) < 3)
-            out(i,j)  = backgroundt;
-        elseif(abs(sum(temp - cloud)) < 3)
-            out(i,j)  = cloudt;
-        elseif(abs(sum(temp - tube)) < 3)
-            out(i,j)  = tubet;
-        elseif(abs(sum(temp - single_ellipse)) < 3)
-            out(i,j)  = single_ellipset;
-        elseif(abs(sum(temp - double_ellipse)) < 3)
-            out(i,j)  = double_ellipset;
-        elseif(abs(sum(temp - diamond)) < 3)
-            out(i,j)  = diamondt;
+        if(abs(sum(temp - color3)) < 3)
+            out(i,j)  = color3t;
+        elseif(abs(sum(temp - color1)) < 3)
+            out(i,j)  = color1t;
+        elseif(abs(sum(temp - color2)) < 3)
+            out(i,j)  = color2t;
+        elseif(abs(sum(temp - color4)) < 3)
+            out(i,j)  = color4t;
         else
-            out(i,j)  = othert;
+            out(i,j)  = bgt;
         end
         
     end
