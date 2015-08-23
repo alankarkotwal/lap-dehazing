@@ -4,13 +4,15 @@
 %% Estimate for A
 % We need a handle on finding A for which we will use the method proposed
 
-    Orig_image = imread('I1.png');
-%     Orig_image = imresize(Orig_image,0.25);
-    Orig_image = double(Orig_image) ./ 255;        
+    Orig_image = imread('10.png');
+    Orig_image = imresize(Orig_image,0.20);
+    
+    Orig_image = double(Orig_image) ./ 255;   
+    Orig_image = Orig_image + 0.001*randn(size(Orig_image));
     % We generate the dark channel prior at every pixel, using window size
     % and zero padding
     
-    dark_ch = makeDarkChannel(Orig_image,21);
+    dark_ch = makeDarkChannel(Orig_image,3);
     
     %   Estimate Atmosphere
     
@@ -28,15 +30,36 @@
     
 %% Manually to be tuned parameters
 
-tau = 0.0005; % gradient descent step size
-beta = 0.9; % huber function parameter for t(x)
-gamma = 0.1; % huber function parameter for J(x)
-beta_of = 0.29; % constant multiplier to priorpenelty(t(x)) in objective function
-gamma_of = 0.29; % constant multiplier to priorpenelty(J(x)) in objective function
-conv_par = 0.002; % Convergence parameter for gradient descent
-max_iter = 3100; % Maximum iterations
+tau = 0.005; % gradient descent step size
+beta = 0.99; % huber function parameter for t(x)
+gamma = 0.001; % huber function parameter for J(x)
+delta = 0.0001; % weight for the Dark Channel Prior
+beta_of = 0.2; % constant multiplier to priorpenelty(t(x)) in objective function
+gamma_of = 0.2; % constant multiplier to priorpenelty(J(x)) in objective function
+k_green = 2.3952;
+k_blue = 2.7056;
+k_red = 4.1693;
+theta_green = 23.8942;
+theta_blue = 20.20;
+theta_red = 25.1374;
+conv_par = 0.02; % Convergence parameter for gradient descent
+max_iter = 51; % Maximum iterations
+
+% tau = 0.005; % gradient descent step size
+% beta = 0; % huber function parameter for t(x)
+% gamma = 0; % huber function parameter for J(x)
+% delta = 0.005; % weight for the Dark Channel Prior
+% beta_of = 0.2; % constant multiplier to priorpenelty(t(x)) in objective function
+% gamma_of = 0.2; % constant multiplier to priorpenelty(J(x)) in objective function
+% k_green = 2.3952;
+% k_blue = 2.7056;
+% theta_green = 23.8942;
+% theta_blue = 20.20;
+% conv_par = 0.02; % Convergence parameter for gradient descent
+% max_iter = 1000; % Maximum iterations
 
 present_J = double(ones(size(Orig_image)));
+%present_J = Orig_image;
 k = size(present_J);
 present_t = double(ones(k(1),k(2)));
 
@@ -45,13 +68,16 @@ obj_fn = sum(sum(sum(modelFidelityTerm.^2))) + ...
          beta * edgePrior(present_t, beta_of,0) + ...
          gamma * edgePrior(present_J(:, :, 1), gamma_of, 0) + ...
          gamma * edgePrior(present_J(:, :, 2), gamma_of, 0) + ...
-         gamma * edgePrior(present_J(:, :, 3), gamma_of, 0);
+         gamma * edgePrior(present_J(:, :, 3), gamma_of, 0) - ...
+         delta * sum(sum(log(gampdf(present_J(:, :, 2), k_green, theta_green)))) - ...
+         delta * sum(sum(log(gampdf(present_J(:, :, 3), k_blue, theta_blue)))) - ...
+         delta * sum(sum(log(gampdf(present_J(:, :, 1), k_red, theta_red))));
 obj_fns = double(zeros(max_iter, 1));
 J_update = double(zeros(size(present_J)));
 iter = 1;
 
 
-while obj_fn > conv_par && iter < max_iter
+while iter <= max_iter
     
     obj_fns(iter) = obj_fn;
     
@@ -66,12 +92,12 @@ while obj_fn > conv_par && iter < max_iter
         J_update(:, :, i) = -2 * modelFidelityTerm(:, :, i) .* present_t + ...
                             gamma * priorUpdate(present_J(:, :, i), gamma_of);
     end
+    J_update(:, :, 2) = J_update(:, :, 2) + delta * gamma_derivative(present_J(:, :, 2), k_green, theta_green);
+    J_update(:, :, 3) = J_update(:, :, 3) + delta * gamma_derivative(present_J(:, :, 3), k_blue, theta_blue);    
+    J_update(:, :, 1) = J_update(:, :, 1) + delta * gamma_derivative(present_J(:, :, 1), k_red, theta_red);
     
     % Perform the update
     present_J = present_J + tau * J_update;
-    [r,c]=find(present_J>1);
-   present_J(sub2ind(size(present_J),r,c)) = 1;
-
     present_t = present_t + tau * t_update;
     
     modelFidelityTerm = modelFidelity(Orig_image, present_J, present_t, A);
@@ -79,7 +105,10 @@ while obj_fn > conv_par && iter < max_iter
          beta * edgePrior(present_t, beta_of,0) + ...
          gamma * edgePrior(present_J(:, :, 1), gamma_of, 0) + ...
          gamma * edgePrior(present_J(:, :, 2), gamma_of, 0) + ...
-         gamma * edgePrior(present_J(:, :, 3), gamma_of, 0);
+         gamma * edgePrior(present_J(:, :, 3), gamma_of, 0) - ...
+         delta * sum(sum(log(gampdf(present_J(:, :, 2), k_green, theta_green)))) - ...
+         delta * sum(sum(log(gampdf(present_J(:, :, 3), k_blue, theta_blue))))- ...
+         delta * sum(sum(log(gampdf(present_J(:, :, 1), k_red, theta_red))));
     
     disp(iter);
     iter = iter+1;

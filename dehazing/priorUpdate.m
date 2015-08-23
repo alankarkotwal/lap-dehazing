@@ -1,6 +1,5 @@
 function upd = priorUpdate(I, gamma)
-    x = ones(size(I)).*(10^-20);
-    
+
     tempImage1 = circshift(I, 1)-I;
     tempImage2 = circshift(I, -1)-I;
     tempImage3 = transpose(circshift(transpose(I), 1))-I;
