@@ -43,7 +43,7 @@ theta_green = 23.8942;
 theta_blue = 20.20;
 theta_red = 25.1374;
 conv_par = 0.02; % Convergence parameter for gradient descent
-max_iter = 7000; % Maximum iterations
+max_iter = 30000; % Maximum iterations
 
 % tau = 0.005; % gradient descent step size
 % beta = 0; % huber function parameter for t(x)
