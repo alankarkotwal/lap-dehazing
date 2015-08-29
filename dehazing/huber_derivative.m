@@ -3,10 +3,17 @@
 
 function out = huber_derivative(in, gamma)
 
-    if(in<=gamma)
-        out = 0.5;
+    
+    [m,n] = size(in);
+    out = in;
+    for i=1:m
+        for j=1:n
+            
+    if(in(i,j)<=gamma)
+        out(i,j) = 0.5;
     else
-        out = gamma./(2*abs(in));
+        out(i,j) = gamma./(2*abs(in(i,j)));
     end
-
+        end
+    end    
 end
