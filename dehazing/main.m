@@ -1,5 +1,24 @@
+function a = main(n_var)
+
 %% For laproscopic image dehazing
 close all;
+
+%% My parameters
+%n_var = 0.001;
+tau = 0.05; % gradient descent step size
+beta = 0.9; % huber function parameter for t(x)
+gamma = 0.01; % huber function parameter for J(x)
+delta = 0.0003; % weight for the Dark Channel Prior
+beta_of = 0.2; % constant multiplier to priorpenelty(t(x)) in objective function
+gamma_of = 0.2; % constant multiplier to priorpenelty(J(x)) in objective function
+k_green = 2.3952;
+k_blue = 2.7056;
+k_red = 4.1693;
+theta_green = 23.8942;
+theta_blue = 20.20;
+theta_red = 25.1374;
+conv_par = 0.02; % Convergence parameter for gradient descent
+max_iter = 700; % Maximum iterations
 
 %% Estimate for A
 % We need a handle on finding A for which we will use the method proposed
@@ -8,7 +27,7 @@ close all;
 %     Orig_image = imresize(Orig_image,0.10);
     
     Orig_image = double(Orig_image) ./ 255;   
-    Orig_image = Orig_image + 0.001*randn(size(Orig_image));
+    Orig_image = Orig_image + n_var * randn(size(Orig_image));
     Clean_image = imread('Original.png');
     Clean_image = im2double(Clean_image);
     % We generate the dark channel prior at every pixel, using window size
@@ -64,24 +83,6 @@ close all;
 % conv_par = 0.02; % Convergence parameter for gradient descent
 % max_iter = 50; % Maximum iterations
 
-tau = 0.05; % gradient descent step size
-beta = 0.9; % huber function parameter for t(x)
-gamma = 0.01; % huber function parameter for J(x)
-delta = 0.0003; % weight for the Dark Channel Prior
-beta_of = 0.2; % constant multiplier to priorpenelty(t(x)) in objective function
-gamma_of = 0.2; % constant multiplier to priorpenelty(J(x)) in objective function
-k_green = 2.3952;
-k_blue = 2.7056;
-k_red = 4.1693;
-theta_green = 23.8942;
-theta_blue = 20.20;
-theta_red = 25.1374;
-conv_par = 0.02; % Convergence parameter for gradient descent
-
-max_iter = 500; % Maximum iterations
-
-present_J = double(zeros(size(Orig_image)));
-
 % tau = 0.005; % gradient descent step size
 % beta = 0; % huber function parameter for t(x)
 % gamma = 0; % huber function parameter for J(x)
@@ -95,7 +96,7 @@ present_J = double(zeros(size(Orig_image)));
 % conv_par = 0.02; % Convergence parameter for gradient descent
 % max_iter = 1000; % Maximum iterations
 
-% present_J = double(ones(size(Orig_image)));
+present_J = double(zeros(size(Orig_image)));
 k = size(present_J);
 present_t = double(ones(k(1),k(2)));
 
@@ -152,11 +153,12 @@ while iter <= max_iter
     iter = iter+1;
 end
 
-figure;
-plot(obj_fns);
-figure;
-x = imfuse(Orig_image,present_J,'montage');
-imshow(x);
-figure; imshow(present_t);
-figure; imshowpair(present_J,Clean_image,'montage');
-% sum(sum(sum(abs(present_J - Clean_image))))
+% figure;
+% plot(obj_fns);
+% figure;
+% x = imfuse(Orig_image,present_J,'montage');
+% imshow(x);
+% figure; imshow(present_t);
+% figure; imshowpair(present_J,Clean_image,'montage');
+
+a = sqrt(sum(sum(sum((present_J - Clean_image).^2)))/(size(present_J, 1)* size(present_J, 2)* size(present_J, 3)));
