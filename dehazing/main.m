@@ -4,7 +4,7 @@ function a = main(n_var)
 close all;
 
 %% My parameters
-%n_var = 0.001;
+% n_var = 0.01;
 tau = 0.05; % gradient descent step size
 beta = 0.9; % huber function parameter for t(x)
 gamma = 0.01; % huber function parameter for J(x)
@@ -18,17 +18,17 @@ theta_green = 23.8942;
 theta_blue = 20.20;
 theta_red = 25.1374;
 conv_par = 0.02; % Convergence parameter for gradient descent
-max_iter = 700; % Maximum iterations
+max_iter = 500; % Maximum iterations
 
 %% Estimate for A
 % We need a handle on finding A for which we will use the method proposed
 
-    Orig_image = imread('I1.png');
+    Orig_image = imread('Simulated Image Data/I_tx3.png');
 %     Orig_image = imresize(Orig_image,0.10);
     
     Orig_image = double(Orig_image) ./ 255;   
     Orig_image = Orig_image + n_var * randn(size(Orig_image));
-    Clean_image = imread('Original.png');
+    Clean_image = imread('Simulated Image Data/Original.png');
     Clean_image = im2double(Clean_image);
     % We generate the dark channel prior at every pixel, using window size
     % and zero padding
@@ -47,7 +47,7 @@ max_iter = 700; % Maximum iterations
 %     numBrightestPixels = ceil(0.001 * dimJ(1) * dimJ(2)); % Use the cieling to overestimate number needed
 %     
 %     A_est = estimateA(Orig_image,dark_ch,numBrightestPixels);
-    A_est = imread('A.png');
+    A_est = imread('Simulated Image Data/A.png');
     A_est = im2double(A_est);  
     A = [A_est(1,1,1)  A_est(1,1,2)  A_est(1,1,3)];
     
@@ -160,5 +160,8 @@ end
 % imshow(x);
 % figure; imshow(present_t);
 % figure; imshowpair(present_J,Clean_image,'montage');
+% imwrite(present_J,'Simulated Image Data/dehazed_out5.png');
+% imwrite(present_t,'Simulated Image Data/tx_estimate_5.png');
+
 
 a = sqrt(sum(sum(sum((present_J - Clean_image).^2)))/(size(present_J, 1)* size(present_J, 2)* size(present_J, 3)));
