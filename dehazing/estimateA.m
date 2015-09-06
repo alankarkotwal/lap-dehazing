@@ -16,6 +16,12 @@ function A = estimateA( I, J, numPixels )
             end
         end
     end
+    G = I;
+    for i=1:numPixels
+        G(brightestJ(i,1),brightestJ(i,2),:) = [1,1,1];
+    end    
+    figure;
+    imshow(G);
 %     brightestJ
     % Find the highest intensity pixel from the original Image using the
     % list calculated above
