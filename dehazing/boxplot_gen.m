@@ -7,6 +7,7 @@ n_inst = 50;
 datas = zeros(n_inst, size(n_vars, 2));
 
 for i=1:size(n_vars, 2)
+    i
     data = getData(n_inst, n_vars(i));
     save(strcat('varyNoiseVariance/', int2str(i), '.mat'), 'data');
     datas(:,i) = data;

@@ -4,7 +4,8 @@ function data = getData(nSamples, n_var)
     data = zeros(nSamples, 1);
 
     for i=1:nSamples
-        data(i) = main(n_var);
+        i
+        data(i) = final(n_var);
     end
 
 end

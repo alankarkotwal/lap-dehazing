@@ -17,7 +17,7 @@ function hist = makeHistogram(folderName)
     for i = 1:size(fileList, 1)
         
         try
-            tempImage = imread(fileList(i).name);
+            tempImage = im2double(imread(fileList(i).name));
         catch
             continue;
         end

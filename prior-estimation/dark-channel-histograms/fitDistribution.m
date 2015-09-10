@@ -15,9 +15,9 @@ function [hist, data, par_r, par_g, par_b] = fitDistribution(folderName)
     fileList = dir;
     
     for i = 1:size(fileList, 1)
-        
+        i
         try
-            tempImage = imread(fileList(i).name);
+            tempImage = im2double(imread(fileList(i).name));
         catch
             continue;
         end
