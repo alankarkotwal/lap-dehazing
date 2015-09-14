@@ -1,14 +1,14 @@
-function [a,Orig_image,Clean_image,present_J,present_t] = main(n_var,gamma,max_iter)
+% function [a,Orig_image,Clean_image,present_J,present_t] = main(n_var,gamma,max_iter)
 
 %% For laproscopic image dehazing
 close all;
 
 %% My parameters
-% n_var = 0.012;
+n_var = 0.012;
 tau = 0.05; % gradient descent step size
-beta = 0.99;  % constant multiplier to priorpenelty(t(x)) in objective function
-% gamma = 0.01; % constant multiplier to priorpenelty(J(x)) in objective function
-delta = 0.003; % weight for the Dark Channel Prior
+beta = 6;  % constant multiplier to priorpenelty(t(x)) in objective function
+gamma = 0.5; % constant multiplier to priorpenelty(J(x)) in objective function
+delta = 2; % weight for the Dark Channel Prior
 beta_of = 1;% huber function parameter for t(x)
 gamma_of = 0.2; % huber function parameter for J(x)
 k_green = 2.3952;
@@ -18,17 +18,17 @@ theta_green = 23.8942;
 theta_blue = 20.20;
 theta_red = 25.1374;
 conv_par = 280; % Convergence parameter for gradient descent
-% max_iter = 50; % Maximum iterations
+max_iter = 50; % Maximum iterations
 
 %% Estimate for A
 % We need a handle on finding A for which we will use the method proposed
 
-    Orig_image = imread('Simulated Image Data/I_tx3.png');
+    Orig_image = imread('pseudo_GT_gen_data.png');
 %     Orig_image = imresize(Orig_image,0.25);
     
     Orig_image = double(Orig_image) ./ 255;   
     Orig_image = Orig_image + n_var * randn(size(Orig_image));
-    Clean_image = imread('Simulated Image Data/Original.png');
+    Clean_image = imread('out_pGT.png');
     Clean_image = im2double(Clean_image);
     % We generate the dark channel prior at every pixel, using window size
     % and zero padding
@@ -47,7 +47,7 @@ conv_par = 280; % Convergence parameter for gradient descent
     numBrightestPixels = ceil(0.001 * dimJ(1) * dimJ(2)); % Use the cieling to overestimate number needed
 %     
 %     A_est = estimateA(Orig_image,dark_ch,numBrightestPixels);
-    A_est = imread('Simulated Image Data/A.png');
+    A_est = imread('A_pGT.png');
     A_est = im2double(A_est);  
     A = [A_est(1,1,1)  A_est(1,1,2)  A_est(1,1,3)];
     
@@ -141,8 +141,10 @@ while iter <= max_iter %&& (prev_obj_fn >= obj_fn || iter < 3)
     % Perform the update
     present_J = present_J + tau * J_update;
     present_J = check(present_J,0);
-    present_J = check(present_J,1);
+%     present_J = check(present_J,1);
     present_t = present_t + tau * t_update;
+    present_t = check(present_t,0);
+    
     
     modelFidelityTerm = modelFidelity(Orig_image, present_J, present_t, A);
     obj_fn = sum(sum(sum(modelFidelityTerm).^2)) + ...
@@ -154,24 +156,24 @@ while iter <= max_iter %&& (prev_obj_fn >= obj_fn || iter < 3)
          delta * sum(sum(log(gampdf(present_J(:, :, 3).*255, k_blue, theta_blue)+ 10^-10)))- ...
          delta * sum(sum(log(gampdf(present_J(:, :, 1).*255, k_red, theta_red)+ 10^-10)));
     
-%     disp(iter);
+    disp(iter);
     iter = iter+1;
 end
 
 present_J = previous_J;
 present_t = previous_t;
-% T = present_t;
+T = present_t;
 %  T = guided_filter(present_t, rgb2gray(Orig_image), 0.003, 3);
 %  for c = 1:3
 %          present_J(:,:,c) = (Orig_image(:,:,c) - A_est(:,:,c))./(max(T, 0.1)) + A_est(:,:,c);
 %  end
-% figure;
-% plot(obj_fns);
-% figure;
-% x = imfuse(Orig_image,present_J,'montage');
-% imshow(x);
-% figure; imshow(present_t);
-% figure; imshowpair(present_J,Clean_image,'montage');
+figure;
+plot(obj_fns);
+figure;
+x = imfuse(Orig_image,present_J,'montage');
+imshow(x);
+figure; imshow(present_t);
+figure; imshowpair(present_J,Clean_image,'montage');
 % imwrite(present_J,'Simulated Image Data/dehazed_out5.png');
 % imwrite(present_t,'Simulated Image Data/tx_estimate_5.png');
 
