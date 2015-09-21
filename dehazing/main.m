@@ -1,14 +1,14 @@
-% function [a,Orig_image,Clean_image,present_J,present_t] = main(n_var,gamma,max_iter)
+function [a,Orig_image,Clean_image,present_J,present_t] = main(n_var,gamma,max_iter)
 
 %% For laproscopic image dehazing
 close all;
 
 %% My parameters
-n_var = 0.12;
+% n_var = 0.12;
 tau = 0.05; % gradient descent step size
-beta = 0.11;  % constant multiplier to priorpenelty(t(x)) in objective function
-gamma = 2; % constant multiplier to priorpenelty(J(x)) in objective function
-delta = 1; % weight for the Dark Channel Prior
+beta = 6;  % constant multiplier to priorpenelty(t(x)) in objective function
+% gamma = 2; % constant multiplier to priorpenelty(J(x)) in objective function
+delta = 5; % weight for the Dark Channel Prior
 beta_of = 1;% huber function parameter for t(x)
 gamma_of = 0.2; % huber function parameter for J(x)
 k_green = 2.3952;
@@ -18,7 +18,7 @@ theta_green = 23.8942;
 theta_blue = 20.20;
 theta_red = 25.1374;
 conv_par = 280; % Convergence parameter for gradient descent
-max_iter = 100; % Maximum iterations
+% max_iter = 100; % Maximum iterations
 
 %% Estimate for A
 % We need a handle on finding A for which we will use the method proposed
@@ -113,7 +113,7 @@ while iter <= max_iter %&& (prev_obj_fn >= obj_fn || iter < 3)
          delta * kl_div(present_J(:,:,2),k_green,theta_green) + ...
          delta * kl_div(present_J(:,:,3),k_blue,theta_blue);
     
-    disp(iter);
+%     disp(iter);
     iter = iter+1;
 end
 
@@ -124,13 +124,13 @@ T = present_t;
 %  for c = 1:3
 %          present_J(:,:,c) = (Orig_image(:,:,c) - A_est(:,:,c))./(max(T, 0.1)) + A_est(:,:,c);
 %  end
-figure;
-plot(obj_fns);
-figure;
-x = imfuse(Orig_image,present_J,'montage');
-imshow(x);
-figure; imshow(present_t);
-figure; imshowpair(present_J,Clean_image,'montage');
+% figure;
+% plot(obj_fns);
+% figure;
+% x = imfuse(Orig_image,present_J,'montage');
+% imshow(x);
+% figure; imshow(present_t);
+% figure; imshowpair(present_J,Clean_image,'montage');
 % imwrite(present_J,'Simulated Image Data/dehazed_out5.png');
 % imwrite(present_t,'Simulated Image Data/tx_estimate_5.png');
 
