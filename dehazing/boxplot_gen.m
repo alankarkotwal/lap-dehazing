@@ -14,6 +14,6 @@ for i=1:size(n_vars, 2)
 end
 
 boxplot(datas, n_vars);
-save('boxplot_pGT.mat','datas');
+save('boxplot.mat','datas');
 % myBxPlt = print('-RGBImage');
 % imwrite(myBxPlt, 'boxPlot.png')

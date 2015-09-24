@@ -13,12 +13,6 @@ beta_of = 1;% huber function parameter for t(x)
 gamma_of = 0.2; % huber function parameter for J(x)
 conv_par = 280; % Convergence parameter for gradient descent
 max_iter = 100; % Maximum iterations
-% k_green = 2.3952;
-% k_blue = 2.7056;
-% k_red = 4.1693;
-% theta_green = 23.8942;
-% theta_blue = 20.20;
-% theta_red = 25.1374;
 
 %% Estimate for A
 % We need a handle on finding A for which we will use the method proposed
@@ -89,9 +83,9 @@ while iter <= max_iter %&& (prev_obj_fn >= obj_fn || iter < 3)
         J_update(:, :, i) = -2 * modelFidelityTerm(:, :, i) .* present_t + ...
                             gamma * priorUpdate(present_J(:, :, i), gamma_of);
     end
-%     J_update(:, :, 2) = J_update(:, :, 2) + delta * gamma_derivative(present_J(:, :, 2).*255, k_green, theta_green);
-%     J_update(:, :, 3) = J_update(:, :, 3) + delta * gamma_derivative(present_J(:, :, 3).*255, k_blue, theta_blue);    
-%     J_update(:, :, 1) = J_update(:, :, 1) + delta * gamma_derivative(present_J(:, :, 1).*255, k_red, theta_red);
+    J_update(:, :, 2) = J_update(:, :, 2) + delta * gamma_derivative(present_J(:, :, 2).*255, k_green, theta_green);
+    J_update(:, :, 3) = J_update(:, :, 3) + delta * gamma_derivative(present_J(:, :, 3).*255, k_blue, theta_blue);    
+    J_update(:, :, 1) = J_update(:, :, 1) + delta * gamma_derivative(present_J(:, :, 1).*255, k_red, theta_red);
     
     J_temp = imhistmatch(present_J, comp_image, 255);
     J_update = J_update + delta*(J_temp - present_J);
