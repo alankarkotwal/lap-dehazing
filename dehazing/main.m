@@ -1,24 +1,23 @@
-
-function [a,Orig_image,Clean_image,present_J,present_t] = main(n_var,gamma,max_iter)
+function [a,Orig_image,Clean_image,present_J,present_t] = main(beta, gamma, delta)
 
 %% For laproscopic image dehazing
 close all;
 
 %% My variable parameters
 % beta = 6;  % constant multiplier to priorpenelty(t(x)) in objective function
-% gamma = 0.01; % constant multiplier to priorpenelty(J(x)) in objective function
-% delta = 5; % weight for the Dark Channel Prior
+% gamma = 0.3; % constant multiplier to priorpenelty(J(x)) in objective function
+% delta = 1; % weight for the Dark Channel Prior
 
 %% My parameters
 n_var = 0.012;
 tau = 0.05; % gradient descent step size
-beta = 6;  % constant multiplier to priorpenelty(t(x)) in objective function
-gamma = 0.3; % constant multiplier to priorpenelty(J(x)) in objective function
-delta = 1; % weight for the Dark Channel Prior
+% beta = 6;  % constant multiplier to priorpenelty(t(x)) in objective function
+% gamma = 0.3; % constant multiplier to priorpenelty(J(x)) in objective function
+% delta = 1; % weight for the Dark Channel Prior
 beta_of = 1;% huber function parameter for t(x)
 gamma_of = 0.2; % huber function parameter for J(x)
-conv_par = 280; % Convergence parameter for gradient descent
-% max_iter = 50; % Maximum iterations
+% conv_par = 280; % Convergence parameter for gradient descent
+max_iter = 50; % Maximum iterations
 
 k_green = 2.3952;
 k_blue = 2.7056;
@@ -122,7 +121,7 @@ while iter <= max_iter %&& (prev_obj_fn >= obj_fn || iter < 3)
          delta * kl_div(present_J(:,:,2),k_green,theta_green) + ...
          delta * kl_div(present_J(:,:,3),k_blue,theta_blue);
     
-    disp(iter);
+    %disp(iter);
     iter = iter+1;
 end
 
@@ -148,3 +147,5 @@ figure; imshowpair(present_J,Clean_image,'montage');
 
 
 a = sqrt(sum(sum(sum((present_J - Clean_image).^2)))/(size(present_J, 1)* size(present_J, 2)* size(present_J, 3)));
+
+end
