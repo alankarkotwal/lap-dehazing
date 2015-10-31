@@ -1,15 +1,15 @@
-function [a,Orig_image,Clean_image,present_J,present_t] = main(beta, gamma, delta)
+% function [a,Orig_image,Clean_image,present_J,present_t] = main(beta, gamma, delta)
 
 %% For laproscopic image dehazing
 close all;
 
 %% My variable parameters
-% beta = 6;  % constant multiplier to priorpenelty(t(x)) in objective function
-% gamma = 0.3; % constant multiplier to priorpenelty(J(x)) in objective function
-% delta = 1; % weight for the Dark Channel Prior
+beta = 6;  % constant multiplier to priorpenelty(t(x)) in objective function
+gamma = 0.9; % constant multiplier to priorpenelty(J(x)) in objective function
+delta = 5; % weight for the Dark Channel Prior
 
 %% My parameters
-n_var = 0.012;
+n_var = 0.03;
 tau = 0.05; % gradient descent step size
 % beta = 6;  % constant multiplier to priorpenelty(t(x)) in objective function
 % gamma = 0.3; % constant multiplier to priorpenelty(J(x)) in objective function
@@ -17,7 +17,7 @@ tau = 0.05; % gradient descent step size
 beta_of = 1;% huber function parameter for t(x)
 gamma_of = 0.2; % huber function parameter for J(x)
 % conv_par = 280; % Convergence parameter for gradient descent
-max_iter = 50; % Maximum iterations
+max_iter = 15; % Maximum iterations
 
 k_green = 2.3952;
 k_blue = 2.7056;
@@ -28,7 +28,7 @@ theta_red = 25.1374;
 %% Estimate for A
 % We need a handle on finding A for which we will use the method proposed
 
-    Orig_image = imread('pseudo_GT_gen_data.png');
+    Orig_image = imread('33rs.png');
 %     Orig_image = imresize(Orig_image,0.25);
     
     Orig_image = double(Orig_image) ./ 255;   
@@ -50,18 +50,19 @@ theta_red = 25.1374;
     %
 %     % TL;DR  TAKE .1% of the brightest pixels
     dimJ = size(dark_ch);
-    numBrightestPixels = ceil(0.001 * dimJ(1) * dimJ(2)); % Use the cieling to overestimate number needed
-%     
+%     numBrightestPixels = ceil(0.001 * dimJ(1) * dimJ(2)); % Use the cieling to overestimate number needed
 %     A_est = estimateA(Orig_image,dark_ch,numBrightestPixels);
-    A_est = imread('A_pGT.png');
+%     A_est = imread('A_pGT.png');
+    A_est = ACheck(Orig_image);
     A_est = im2double(A_est);  
     A = [A_est(1,1,1)  A_est(1,1,2)  A_est(1,1,3)];
 
 present_J = zeros(size(Orig_image));
 k = size(present_J);
 present_t = double(ones(k(1),k(2)));
+present_A = A_est;
 
-modelFidelityTerm = modelFidelity(Orig_image, present_J, present_t, A);
+modelFidelityTerm = modelFidelity(Orig_image, present_J, present_t, present_A);
 obj_fn = sum(sum(sum(modelFidelityTerm.^2))) + ...
          beta * edgePrior(present_t, beta_of, 0) + ...   
          gamma * edgePrior(present_J(:, :, 1), gamma_of, 0) + ...
@@ -69,7 +70,8 @@ obj_fn = sum(sum(sum(modelFidelityTerm.^2))) + ...
          gamma * edgePrior(present_J(:, :, 3), gamma_of, 0) + ...
          delta * kl_div(present_J(:,:,1),k_red,theta_red) + ...
          delta * kl_div(present_J(:,:,2),k_green,theta_green) + ...
-         delta * kl_div(present_J(:,:,3),k_blue,theta_blue);
+         delta * kl_div(present_J(:,:,3),k_blue,theta_blue) ;%+ ...
+%          theta * (sum(sum((present_A - A_est).^2)));
 obj_fns = double(zeros(max_iter, 1));
 J_update = double(zeros(size(present_J)));
 previous_J = present_J;
@@ -100,6 +102,8 @@ while iter <= max_iter %&& (prev_obj_fn >= obj_fn || iter < 3)
     
     J_temp = imhistmatch(present_J, comp_image, 255);
     J_update = J_update + delta*(J_temp - present_J);
+
+    %A_update =
     
     % Perform the update
     present_J = present_J + tau * J_update;
@@ -111,7 +115,7 @@ while iter <= max_iter %&& (prev_obj_fn >= obj_fn || iter < 3)
     present_t = check(present_t,0);
     
     
-    modelFidelityTerm = modelFidelity(Orig_image, present_J, present_t, A);
+    modelFidelityTerm = modelFidelity(Orig_image, present_J, present_t, present_A);
     obj_fn = sum(sum(sum(modelFidelityTerm.^2))) + ...
          beta * edgePrior(present_t, beta_of, 0) + ...   
          gamma * edgePrior(present_J(:, :, 1), gamma_of, 0) + ...
@@ -119,9 +123,10 @@ while iter <= max_iter %&& (prev_obj_fn >= obj_fn || iter < 3)
          gamma * edgePrior(present_J(:, :, 3), gamma_of, 0) + ...
          delta * kl_div(present_J(:,:,1),k_red,theta_red) + ...
          delta * kl_div(present_J(:,:,2),k_green,theta_green) + ...
-         delta * kl_div(present_J(:,:,3),k_blue,theta_blue);
-    
-    %disp(iter);
+         delta * kl_div(present_J(:,:,3),k_blue,theta_blue) ;%+ ...
+%          theta * (sum(sum((present_A - A_est).^2)));
+
+    disp(iter);
     iter = iter+1;
 end
 
@@ -139,13 +144,13 @@ figure;
 x = imfuse(Orig_image,present_J,'montage');
 imshow(x);
 figure; imshow(present_t);
-figure; imshowpair(present_J,Clean_image,'montage');
+% figure; imshowpair(present_J,Clean_image,'montage');
 
 
 % imwrite(present_J,'Simulated Image Data/dehazed_out5.png');
 % imwrite(present_t,'Simulated Image Data/tx_estimate_5.png');
 
 
-a = sqrt(sum(sum(sum((present_J - Clean_image).^2)))/(size(present_J, 1)* size(present_J, 2)* size(present_J, 3)));
+% a = sqrt(sum(sum(sum((present_J - Clean_image).^2)))/(size(present_J, 1)* size(present_J, 2)* size(present_J, 3)));
 
-end
+% end

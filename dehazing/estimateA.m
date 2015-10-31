@@ -1,13 +1,14 @@
 
 %% estimate A term
 
-function A = estimateA( I, J, numPixels )
+function [A, threshMap] = estimateA( I, J, numPixels )
 %ESTIMATEA Summary of this function goes here
 %   Detailed explanation goes here
-
+    threshMap = zeros([size(I, 1) size(I, 2)]);
     % Make a list of the brightest pixels
     brightestJ = zeros(numPixels,3);
     [x_dim, y_dim] = size(J);
+    
     for i = 1:x_dim
         for j = 1:y_dim
             [minElement, index] = min(brightestJ(:,3));
@@ -16,12 +17,14 @@ function A = estimateA( I, J, numPixels )
             end
         end
     end
+    
     G = I;
     for i=1:numPixels
         G(brightestJ(i,1),brightestJ(i,2),:) = [1,1,1];
+        threshMap(brightestJ(i,1),brightestJ(i,2)) = 1;
     end    
-    figure;
-    imshow(G);
+    %figure;
+    %imshow(G);
 %     brightestJ
     % Find the highest intensity pixel from the original Image using the
     % list calculated above

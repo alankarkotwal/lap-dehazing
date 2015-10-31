@@ -2,9 +2,12 @@
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 % Alankar Kotwal
 
-function hist = makeHistogram(folderName)
+function makeHistogram(folderName)
 
-    hist = double(zeros(256, 3));
+    rAcc = [];
+    gAcc = [];
+    bAcc = [];
+%     hist = double(zeros(256, 3));
 
     try
         chdir(folderName);
@@ -16,20 +19,29 @@ function hist = makeHistogram(folderName)
     
     for i = 1:size(fileList, 1)
         
+        disp([i]);
+        
         try
-            tempImage = im2double(imread(fileList(i).name));
+            tempImage = imread(fileList(i).name);
         catch
             continue;
         end
         
-        for j = 1:3
-            hist(:, j) = hist(:, j) + imhist(tempImage(:, :, j));
-        end
+        myCh = tempImage(:, :, 1);
+        rAcc = vertcat(rAcc, myCh(:));
+        myCh = tempImage(:, :, 2);
+        gAcc = vertcat(gAcc, myCh(:));
+        myCh = tempImage(:, :, 3);
+        bAcc = vertcat(bAcc, myCh(:));
     end
     
-    total = sum(hist);
-    hist = hist/total(1);
+%     total = sum(hist);
+%     hist = hist/total(1);
 
     chdir('..');
+    
+    save('rAcc.mat', 'rAcc');
+    save('gAcc.mat', 'gAcc');
+    save('bAcc.mat', 'bAcc');
 
 end
