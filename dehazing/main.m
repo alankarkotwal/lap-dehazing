@@ -4,10 +4,10 @@
 close all;
 
 %% My variable parameters
-beta = 0.6;  % constant multiplier to priorpenelty(t(x)) in objective function
-gamma = 0.02; % constant multiplier to priorpenelty(J(x)) in objective function
-delta = 0.5; % weight for the Dark Channel Prior
-zeta = 0.1; % weight for the specularity sparsity prior
+beta = 5;  % constant multiplier to priorpenelty(t(x)) in objective function
+gamma = 3.2; % constant multiplier to priorpenelty(J(x)) in objective function
+delta = 4; % weight for the Dark Channel Prior
+zeta = 0.5; % weight for the specularity sparsity prior
 xi = 1; % weight of the specularity image smoothness term
 
 %% My parameters
@@ -19,7 +19,7 @@ tau = 0.05; % gradient descent step size
 beta_of = 1;% huber function parameter for t(x)
 gamma_of = 0.2; % huber function parameter for J(x)
 % conv_par = 280; % Convergence parameter for gradient descent
-max_iter = 100; % Maximum iterations
+max_iter = 20; % Maximum iterations
 
 k_green = 2.3952;
 k_blue = 2.7056;
@@ -61,6 +61,7 @@ theta_red = 25.1374;
 
 present_J = zeros(size(Orig_image));
 present_Js = init_spec(Orig_image);
+% present_Js =ones(size(Orig_image,1),size(Orig_image,2));
 k = size(present_J);
 present_t = double(ones(k(1),k(2)));
 present_A = A_est;
@@ -73,7 +74,7 @@ obj_fn = sum(sum(sum(modelFidelityTerm.^2))) + ...
      gamma * edgePrior(present_J(:, :, 3), gamma_of, 0) + ...
      delta * kl_div(present_J(:,:,1),k_red,theta_red) + ...
      delta * kl_div(present_J(:,:,2),k_green,theta_green) + ...
-     delta * kl_div(present_J(:,:,3),k_blue,theta_blue) + ...
+     delta * kl_div(present_J(:,:,3),k_blue,theta_blue) - ...
      zeta * sparsePrior(present_Js) + ...
      xi * edgePrior(present_Js, 1, 0);
      
@@ -108,7 +109,7 @@ while iter <= max_iter %&& (prev_obj_fn >= obj_fn || iter < 3)
     J_temp = imhistmatch(present_J, Clean_image, 255);
     J_update = J_update + delta*(J_temp - present_J);
 
-    Js_update = -2 * sum(modelFidelityTerm, 3) .* present_t + ...
+    Js_update = -2 * sum(modelFidelityTerm, 3) .* present_t - ...
                 zeta * sign(present_Js) + xi * priorUpdate(present_Js, 1);
     
     % Perform the update
@@ -132,7 +133,7 @@ while iter <= max_iter %&& (prev_obj_fn >= obj_fn || iter < 3)
          delta * kl_div(present_J(:,:,1),k_red,theta_red) + ...
          delta * kl_div(present_J(:,:,2),k_green,theta_green) + ...
          delta * kl_div(present_J(:,:,3),k_blue,theta_blue) + ...
-         zeta * sparsePrior(present_Js) + ...
+         zeta * sparsePrior(present_Js) - ...
          xi * edgePrior(present_Js, 1, 0);
 %          theta * (sum(sum((present_A - A_est).^2)));
 
